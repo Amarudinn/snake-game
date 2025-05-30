@@ -145,18 +145,18 @@
     </video>
     <canvas id="game"></canvas>
   </div>
+  <button class="start-btn" id="startBtn">Start Game</button>
   <div class="controls">
     <button class="btn up">↑</button>
     <button class="btn left">←</button>
     <button class="btn right">→</button>
     <button class="btn down">↓</button>
   </div>
-  <button class="start-btn" id="startBtn">Start Game</button>
   <div class="overlay" id="overlay"></div>
   <div class="game-over-box" id="gameOverBox">
-    <button class="start-btn" onclick="setup()">Start Game</button>
-    <div id="finalScoreText">Game Over! Your Score: 0</div>
-    <button onclick="shareOnX()">Share on X</button>
+      <div id="finalScoreText">Game Over! Your Score: 0</div>
+      <button onclick="shareOnX()">Share on X</button>
+      <button class="start-btn" onclick="setup()">Start Game</button>
   </div>
 
   <script>
@@ -343,7 +343,7 @@
 
     function shareOnX() {
       const score = scoreDisplay.textContent;
-      const tweet = `Ini adalah skor snake game tertinggi saya ${score} kalahkan skor tertinggi saya, play now: snake-game-nexus.netlify.app\n\nMade by @m_amarudinn2 Build on @NexusLabs`;
+      const tweet = `This is my highest snake game score ${score} beat my highest score, Play now: snake-game-nexus.netlify.app\n\nMade by @m_amarudinn2 Build on @NexusLabs`;
       const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
       window.open(tweetUrl, '_blank');
     }
