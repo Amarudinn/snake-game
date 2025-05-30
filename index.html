@@ -14,16 +14,23 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      color: white;
+      font-family: sans-serif;
     }
     canvas {
       background-color: #111;
-      width: 100vw;
-      height: 100vw;
-      max-height: 80vh;
+      width: 100%;
+      height: auto;
+      max-width: 600px;
+      max-height: 600px;
+    }
+    .score {
+      margin: 10px;
+      font-size: 24px;
     }
     .controls {
       margin-top: 10px;
-      display: grid;
+      display: none;
       grid-template-areas:
         ". up ."
         "left . right"
@@ -43,9 +50,21 @@
     .down { grid-area: down; }
     .left { grid-area: left; }
     .right { grid-area: right; }
+
+    @media (max-width: 768px) {
+      canvas {
+        width: 100vw;
+        height: 100vw;
+        max-height: 80vh;
+      }
+      .controls {
+        display: grid;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="score">Score: <span id="score">0</span></div>
   <canvas id="game"></canvas>
   <div class="controls">
     <button class="btn up">↑</button>
@@ -54,12 +73,21 @@
     <button class="btn down">↓</button>
   </div>
 
+  <audio id="eatSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
+    const scoreDisplay = document.getElementById("score");
+    const eatSound = document.getElementById("eatSound");
 
     function resizeCanvas() {
-      const size = Math.min(window.innerWidth, window.innerHeight * 0.8);
+      let size;
+      if (window.innerWidth <= 768) {
+        size = Math.min(window.innerWidth, window.innerHeight * 0.8);
+      } else {
+        size = 600;
+      }
       canvas.width = size;
       canvas.height = size;
     }
@@ -91,10 +119,12 @@
         snake.draw();
 
         if (snake.eat(food)) {
+          eatSound.play();
           food.pickLocation();
         }
 
         snake.checkCollision();
+        scoreDisplay.textContent = snake.total;
       }, 150);
     })();
 
@@ -118,11 +148,9 @@
 
       this.draw = function () {
         ctx.fillStyle = "lime";
-
         for (let i = 0; i < this.tail.length; i++) {
           ctx.fillRect(this.tail[i].x, this.tail[i].y, scale, scale);
         }
-
         ctx.fillRect(this.x, this.y, scale, scale);
       };
 
