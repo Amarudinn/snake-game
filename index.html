@@ -128,8 +128,9 @@
 
     @media (max-width: 768px) {
       .canvas-container {
-        width: 95vw;
+        width: 100vw;
         max-height: 80vh;
+        padding: 0 5px 0 5px;
       }
       .controls {
         display: grid;
@@ -343,7 +344,7 @@
 
     function shareOnX() {
       const score = scoreDisplay.textContent;
-      const tweet = `This is my highest snake game score ${score} beat my highest score, Play now: snake-game-nexus.netlify.app\n\nMade by @m_amarudinn2 Build on @NexusLabs`;
+      const tweet = `This is my highest snake game score ${score}, beat my highest score, Play now: snake-game-nexus.netlify.app\n\nMade by @m_amarudinn2 Build on @NexusLabs`;
       const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
       window.open(tweetUrl, '_blank');
     }
