@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snake Game</title>
+  <meta name="description" content="Play the classic Snake Game online. Beat your high score and share with friends. Built by @m_amarudinn2 with NexusLabs.">
+  <meta property="og:title" content="Snake Game">
+  <meta property="og:description" content="Can you beat my high score? Play Snake Game now and share your score!">
+  <meta property="og:image" content="https://snake-game-nexus.netlify.app/og-image.png">
+  <meta property="og:url" content="https://snake-game-nexus.netlify.app">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Snake Game">
+  <meta name="twitter:description" content="Can you beat my high score? Play Snake Game now and share your score!">
+  <meta name="twitter:image" content="https://snake-game-nexus.netlify.app/og-image.png">
+  <meta name="twitter:creator" content="@m_amarudinn2">
   <style>
     html, body {
       margin: 0;
@@ -51,6 +61,49 @@
     .left { grid-area: left; }
     .right { grid-area: right; }
 
+    .game-over-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      display: none;
+      z-index: 10;
+    }
+    .game-over-box button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #1da1f2;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 5;
+    }
+    .start-btn {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: green;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
     @media (max-width: 768px) {
       canvas {
         width: 100vw;
@@ -72,69 +125,71 @@
     <button class="btn right">→</button>
     <button class="btn down">↓</button>
   </div>
-
-  <audio id="eatSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
-
+  <button class="start-btn" id="startBtn">Start Game</button>
+  <div class="overlay" id="overlay"></div>
+  <div class="game-over-box" id="gameOverBox">
+    <div id="finalScoreText">Game Over! Your Score: 0</div>
+    <button onclick="shareOnX()">Share on X</button>
+    <button onclick="startGameFromBox()">Start Game</button>
+  </div>
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
     const scoreDisplay = document.getElementById("score");
-    const eatSound = document.getElementById("eatSound");
+    const gameOverBox = document.getElementById("gameOverBox");
+    const finalScoreText = document.getElementById("finalScoreText");
+    const overlay = document.getElementById("overlay");
+    const startBtn = document.getElementById("startBtn");
 
-    let audioInitialized = false;
-
-    function initAudio() {
-      if (!audioInitialized) {
-        eatSound.play().catch(() => {});
-        audioInitialized = true;
-      }
-    }
+    let interval;
+    const scale = 20;
+    let rows, columns;
+    let snake;
+    let food;
 
     function resizeCanvas() {
       let size;
       if (window.innerWidth <= 768) {
         size = Math.floor(Math.min(window.innerWidth, window.innerHeight * 0.8) / scale) * scale;
       } else {
-        size = scale * 30; // 600px
+        size = scale * 30;
       }
       canvas.width = size;
       canvas.height = size;
     }
-
-    const scale = 20;
-    let rows, columns;
-    let snake;
-    let food;
 
     function calculateGrid() {
       rows = canvas.height / scale;
       columns = canvas.width / scale;
     }
 
-    (function setup() {
+    function setup() {
+      clearInterval(interval);
       resizeCanvas();
       calculateGrid();
       snake = new Snake();
       food = new Food();
       food.pickLocation();
-
-      window.setInterval(() => {
+      gameOverBox.style.display = 'none';
+      overlay.style.display = 'none';
+      scoreDisplay.textContent = 0;
+      interval = setInterval(() => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         food.draw();
         snake.update();
         snake.draw();
-
         if (snake.eat(food)) {
-          initAudio();
-          eatSound.currentTime = 0;
-          eatSound.play();
           food.pickLocation();
         }
-
-        snake.checkCollision();
+        if (snake.checkCollision()) {
+          clearInterval(interval);
+          finalScoreText.textContent = `Game Over! Your Score: ${snake.total}`;
+          overlay.style.display = 'block';
+          gameOverBox.style.display = 'block';
+        }
         scoreDisplay.textContent = snake.total;
       }, 150);
-    })();
+    }
 
     window.addEventListener('resize', () => {
       resizeCanvas();
@@ -142,15 +197,25 @@
     });
 
     window.addEventListener("keydown", e => {
-      initAudio();
       const direction = e.key.replace("Arrow", "");
       snake.changeDirection(direction);
     });
 
-    document.querySelector(".up").addEventListener("click", () => { initAudio(); snake.changeDirection("Up"); });
-    document.querySelector(".down").addEventListener("click", () => { initAudio(); snake.changeDirection("Down"); });
-    document.querySelector(".left").addEventListener("click", () => { initAudio(); snake.changeDirection("Left"); });
-    document.querySelector(".right").addEventListener("click", () => { initAudio(); snake.changeDirection("Right"); });
+    document.querySelector(".up").addEventListener("click", () => { snake.changeDirection("Up"); });
+    document.querySelector(".down").addEventListener("click", () => { snake.changeDirection("Down"); });
+    document.querySelector(".left").addEventListener("click", () => { snake.changeDirection("Left"); });
+    document.querySelector(".right").addEventListener("click", () => { snake.changeDirection("Right"); });
+
+    function startGameFromBox() {
+      gameOverBox.style.display = 'none';
+      overlay.style.display = 'none';
+      setup();
+    }
+
+    startBtn.addEventListener("click", () => {
+      startBtn.style.display = 'none';
+      setup();
+    });
 
     function Snake() {
       this.x = 0;
@@ -172,14 +237,11 @@
         for (let i = 0; i < this.tail.length - 1; i++) {
           this.tail[i] = this.tail[i + 1];
         }
-
         if (this.total >= 1) {
           this.tail[this.total - 1] = { x: this.x, y: this.y };
         }
-
         this.x += this.xSpeed;
         this.y += this.ySpeed;
-
         if (this.x >= canvas.width) this.x = 0;
         if (this.y >= canvas.height) this.y = 0;
         if (this.x < 0) this.x = canvas.width - scale;
@@ -188,30 +250,10 @@
 
       this.changeDirection = function (direction) {
         switch (direction) {
-          case "Up":
-            if (this.ySpeed === 0) {
-              this.xSpeed = 0;
-              this.ySpeed = -scale;
-            }
-            break;
-          case "Down":
-            if (this.ySpeed === 0) {
-              this.xSpeed = 0;
-              this.ySpeed = scale;
-            }
-            break;
-          case "Left":
-            if (this.xSpeed === 0) {
-              this.xSpeed = -scale;
-              this.ySpeed = 0;
-            }
-            break;
-          case "Right":
-            if (this.xSpeed === 0) {
-              this.xSpeed = scale;
-              this.ySpeed = 0;
-            }
-            break;
+          case "Up": if (this.ySpeed === 0) { this.xSpeed = 0; this.ySpeed = -scale; } break;
+          case "Down": if (this.ySpeed === 0) { this.xSpeed = 0; this.ySpeed = scale; } break;
+          case "Left": if (this.xSpeed === 0) { this.xSpeed = -scale; this.ySpeed = 0; } break;
+          case "Right": if (this.xSpeed === 0) { this.xSpeed = scale; this.ySpeed = 0; } break;
         }
       };
 
@@ -226,11 +268,10 @@
       this.checkCollision = function () {
         for (let i = 0; i < this.tail.length; i++) {
           if (this.x === this.tail[i].x && this.y === this.tail[i].y) {
-            this.total = 0;
-            this.tail = [];
-            alert("Game Over! Press OK to restart.");
+            return true;
           }
         }
+        return false;
       };
     }
 
@@ -247,6 +288,13 @@
         ctx.fillStyle = "red";
         ctx.fillRect(this.x, this.y, scale, scale);
       };
+    }
+
+    function shareOnX() {
+      const score = scoreDisplay.textContent;
+      const tweet = `Ini adalah skor snake game tertinggi saya ${score} kalahkan skor tertinggi saya, play now: snake-game-nexus.netlify.app\n\nMade by @m_amarudinn2 Build on @NexusLabs`;
+      const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
+      window.open(tweetUrl, '_blank');
     }
   </script>
 </body>
