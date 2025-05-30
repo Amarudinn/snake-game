@@ -2,19 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snake Game</title>
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #000;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      background-color: #000;
     }
     canvas {
       background-color: #111;
+      width: 100vw;
+      height: 100vw;
+      max-height: 80vh;
     }
     .controls {
       margin-top: 10px;
@@ -26,13 +31,13 @@
       gap: 10px;
     }
     .btn {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       background-color: #333;
       color: white;
-      font-size: 20px;
+      font-size: 24px;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
     }
     .up { grid-area: up; }
     .down { grid-area: down; }
@@ -41,7 +46,7 @@
   </style>
 </head>
 <body>
-  <canvas id="game" width="400" height="400"></canvas>
+  <canvas id="game"></canvas>
   <div class="controls">
     <button class="btn up">↑</button>
     <button class="btn left">←</button>
@@ -52,19 +57,34 @@
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
-    const scale = 20;
-    const rows = canvas.height / scale;
-    const columns = canvas.width / scale;
 
+    function resizeCanvas() {
+      const size = Math.min(window.innerWidth, window.innerHeight * 0.8);
+      canvas.width = size;
+      canvas.height = size;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const scale = 20;
+    let rows, columns;
     let snake;
     let food;
 
+    function calculateGrid() {
+      rows = Math.floor(canvas.height / scale);
+      columns = Math.floor(canvas.width / scale);
+    }
+
     (function setup() {
+      calculateGrid();
       snake = new Snake();
       food = new Food();
       food.pickLocation();
 
       window.setInterval(() => {
+        calculateGrid();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         food.draw();
         snake.update();
